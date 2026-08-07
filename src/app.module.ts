@@ -1,16 +1,28 @@
 import {Module} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
-import {AdminModule} from './admin/admin.module';
 import {ConfigModule} from "@nestjs/config";
 import {PrismaService} from "./prisma.service";
-import {AuthService} from "./auth/auth.service";
-import { AuthController } from './auth/auth.controller';
+import {ThrottlerGuard, ThrottlerModule} from "@nestjs/throttler";
+import {AuthModule} from './auth/auth.module';
+import {APP_GUARD} from "@nestjs/core";
 
 @Module({
-    imports: [AdminModule, ConfigModule.forRoot()],
-    controllers: [AppController, AuthController],
-    providers: [AppService, AuthService, PrismaService],
+    imports: [
+        ConfigModule.forRoot(),
+        AuthModule,
+        ThrottlerModule.forRoot({
+            throttlers: [{
+                ttl: 60000,
+                limit: 10
+            }]
+        }),
+    ],
+    controllers: [AppController],
+    providers: [AppService, PrismaService, {
+        provide: APP_GUARD,
+        useClass: ThrottlerGuard
+    }],
 })
 export class AppModule {
 }
