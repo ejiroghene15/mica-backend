@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN     "onboarding_complete" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "refreshToken" TEXT;
