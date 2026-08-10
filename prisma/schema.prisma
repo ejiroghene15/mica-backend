@@ -42,12 +42,14 @@ enum ChatRole {
 // ------------------------------------------------------------------
 
 model User {
-  id         String   @id @default(cuid())
-  name       String
-  email      String   @unique
-  password   String
-  streakDays Int      @default(0)
-  joinedAt   DateTime @default(now())
+  id                 String   @id @default(cuid())
+  name               String
+  email              String   @unique
+  password           String
+  refreshToken       String?
+  onboardingComplete Boolean  @default(false) @map("onboarding_complete")
+  streakDays         Int      @default(0)
+  joinedAt           DateTime @default(now())
 
   checkIns       CheckIn[]
   journalEntries JournalEntry[]

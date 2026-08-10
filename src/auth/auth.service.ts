@@ -1,9 +1,10 @@
 import {BadGatewayException, ConflictException, Injectable} from "@nestjs/common";
-import {PrismaService} from "../prisma.service";
-import {SignupDto} from "../dto/signup.dto";
+import {PrismaService} from "../common/services/prisma.service";
+import {SignupDto} from "./dto/signup.dto";
 import {JwtService} from "@nestjs/jwt";
-import {HashPassword} from "../utils/password-hash";
+import {HashPassword} from "../common/utils/password-hash";
 import bcrypt from "bcrypt";
+import {env} from "prisma/config";
 
 @Injectable()
 export class AuthService {
@@ -44,7 +45,65 @@ export class AuthService {
     }
 
     async login(user: any) {
-        const payload = {email: user.email, sub: user.id};
-        return {access_token: this.jwtService.sign(payload),};
+        const tokens = await this.generateTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
+        return tokens;
+    }
+
+    private async generateTokens(userId: string, email: string) {
+        const payload = {sub: userId, email};
+
+        const [access_token, refresh_token] = await Promise.all([
+            this.jwtService.signAsync(payload, {
+                secret: env('JWT_ACCESS_SECRET'),
+                expiresIn: '15m',
+            }),
+            this.jwtService.signAsync(payload, {
+                secret: env('JWT_REFRESH_SECRET'), // different secret from access token
+                expiresIn: '7d',
+            }),
+        ]);
+
+        return {access_token, refresh_token};
+    }
+
+    private async updateRefreshTokenHash(userId: string, refreshToken: string) {
+        const hash = await bcrypt.hash(refreshToken, 10);
+        await this.prisma.user.update({
+            where: {id: userId},
+            data: {refreshToken: hash},
+        });
+    }
+
+    public async refreshTokens(userId: string, refreshToken: string) {
+        const user = await this.prisma.user.findUnique({where: {id: userId}});
+
+        if (!user || !user.refreshToken) {
+            throw new BadGatewayException("Access Denied");
+        }
+
+        const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
+        if (!isRefreshTokenValid) {
+            throw new BadGatewayException("Access Denied");
+        }
+
+        return this.login(user)
+    }
+
+    async logout(userId: string): Promise<string> {
+        console.log(userId)
+        await this.prisma.user.update({
+            where: {id: userId},
+            data: {refreshToken: null},
+        });
+        return "Successfully logged out";
+    }
+
+    forgotPassword(email: string) {
+        return Promise.resolve(undefined);
+    }
+
+    resetPassword(token: string, newPassword: string) {
+        return Promise.resolve(undefined);
     }
 }
