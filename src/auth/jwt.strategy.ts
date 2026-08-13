@@ -1,7 +1,7 @@
 
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import {AuthGuard, PassportStrategy} from '@nestjs/passport';
+import {ExecutionContext, Injectable} from '@nestjs/common';
 import { jwtConstants } from './constants';
 
 @Injectable()
@@ -16,5 +16,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload: any) {
         return { userId: payload.sub, email: payload.email };
+    }
+}
+
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        return super.canActivate(context) as Promise<boolean>;
     }
 }

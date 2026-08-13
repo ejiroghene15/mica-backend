@@ -1,20 +1,17 @@
 import {Controller, Get, UseGuards} from '@nestjs/common';
-import {PrismaService} from "../common/services/prisma.service";
-import {AuthGuard} from "@nestjs/passport";
+import {PrismaService} from "../core/services/prisma.service";
 import {CurrentUser} from "../common/decorators/current-user.decorator";
+import {JwtAuthGuard} from "../auth/jwt.strategy";
+import {UserService} from "./user.service";
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-    constructor(public prisma: PrismaService) {
+    constructor(public userService: UserService) {
     }
 
     @Get('me')
-    async profile(@CurrentUser() user): Promise<any> {
-        const userProfile = await this.prisma.user.findUnique({
-            where: {id: user.userId},
-            omit: {password: true, refreshToken: true},
-        });
-        return userProfile;
+    profile(@CurrentUser() user): object {
+        return this.userService.profile(user.id);
     }
 }

@@ -1,14 +1,16 @@
 import {Body, Controller, Post, Req, UseGuards} from '@nestjs/common';
 import {AuthService} from "./auth.service";
-import {SignupDto} from "./dto/signup.dto";
-import {AuthGuard} from "@nestjs/passport";
+import {ForgotPasswordDto, ResetPasswordDto, SignupDto} from "./auth.dto";
+import {LocalAuthGuard} from "./local.strategy";
+import {JwtRefreshAuthGuard} from "./jwt-refresh.strategy";
+import {JwtAuthGuard} from "./jwt.strategy";
 
 @Controller('auth')
 export class AuthController {
     constructor(public authService: AuthService) {
     }
 
-    @UseGuards(AuthGuard('local'))
+    @UseGuards(LocalAuthGuard)
     @Post("login")
     async login(@Req() req): Promise<object> {
         return this.authService.login(req.user)
@@ -19,25 +21,25 @@ export class AuthController {
         return this.authService.register(signupDto)
     }
 
-    @UseGuards(AuthGuard('jwt-refresh'))
+    @UseGuards(JwtRefreshAuthGuard)
     @Post("refresh")
     refresh(@Req() req): object {
-        return this.authService.refreshTokens(req.user.id, req.user.refreshToken)
+        return this.authService.refreshTokens(req.user.userId, req.user.refreshToken)
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtAuthGuard)
     @Post("logout")
     async logout(@Req() req) {
         return await this.authService.logout(req.user.userId)
     }
 
     @Post("forgot-password")
-    async forgotPassword(@Body('email') email: string) {
-        return this.authService.forgotPassword(email)
+    async forgotPassword(@Body() dto: ForgotPasswordDto) {
+        return this.authService.forgotPassword(dto.email)
     }
 
     @Post("reset-password")
-    async resetPassword(@Body('token') token: string, @Body('newPassword') newPassword: string) {
-        return this.authService.resetPassword(token, newPassword)
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPassword(dto.token, dto.email, dto.newPassword)
     }
 }
