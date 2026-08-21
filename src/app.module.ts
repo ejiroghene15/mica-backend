@@ -13,7 +13,7 @@ import {CoreModule} from './core/core.module';
         ConfigModule.forRoot(),
         CoreModule,
         AuthModule,
-        UsersModule
+        UsersModule,
     ],
     controllers: [AppController],
     providers: [
@@ -21,7 +21,7 @@ import {CoreModule} from './core/core.module';
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard
-        }
+        },
     ],
 })
 export class AppModule {

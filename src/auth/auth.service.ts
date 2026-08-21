@@ -26,6 +26,7 @@ export class AuthService {
 
         try {
             SignupDto.password = await HashPassword(SignupDto.password)
+
             await this.prisma.user.create({data: SignupDto, select: {id: true, name: true, email: true}})
 
             // Send welcome email after successful registration
@@ -66,7 +67,7 @@ export class AuthService {
         const [access_token, refresh_token] = await Promise.all([
             this.jwtService.signAsync(payload, {
                 secret: jwtConstants.secret,
-                expiresIn: '15m',
+                expiresIn: '1d',
             }),
             this.jwtService.signAsync(payload, {
                 secret: jwtConstants.refresh_secret, // different secret from access token

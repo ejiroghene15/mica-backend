@@ -4,14 +4,16 @@ import {MailModule} from "../mail/mail.module";
 import {BullModule} from "@nestjs/bullmq";
 import {ThrottlerModule} from "@nestjs/throttler";
 import {CacheModule} from "@nestjs/cache-manager";
+import KeyvRedis from "@keyv/redis";
+import {env} from "prisma/config";
 
 @Global()
 @Module({
     imports: [
         BullModule.forRoot({
             connection: {
-                host: 'localhost',
-                port: 6379,
+                host: env('REDIS_HOST'),
+                port: parseInt(env('REDIS_PORT')),
             },
         }),
 
@@ -19,11 +21,14 @@ import {CacheModule} from "@nestjs/cache-manager";
             throttlers: [{
                 ttl: 60000,
                 limit: 10
-            }]
+            }],
+            errorMessage: 'Too many requests, please try again later.'
         }),
 
-        CacheModule.register(),
-
+        CacheModule.register({
+            stores: new KeyvRedis(env('REDIS_URL')),
+            isGlobal: true,
+        }),
         MailModule
     ],
     providers: [PrismaService],
