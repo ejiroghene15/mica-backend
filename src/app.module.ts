@@ -7,6 +7,7 @@ import {AuthModule} from './auth/auth.module';
 import {APP_GUARD} from "@nestjs/core";
 import {UsersModule} from './users/users.module';
 import {CoreModule} from './core/core.module';
+import { JournalModule } from './journal/journal.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import {CoreModule} from './core/core.module';
         CoreModule,
         AuthModule,
         UsersModule,
+        JournalModule,
     ],
     controllers: [AppController],
     providers: [

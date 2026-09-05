@@ -22,16 +22,17 @@ export class UserService {
 
         userData = await this.prisma.user.findUnique({
             where: {id: userId},
-            include: {
-                settings: {
-                    select: {
-                        dailyCheckInReminder: true,
-                        journalPromptReminder: true,
-                        appLock: true,
-                        hidePreviews: true
-                    },
-                },
-            }
+            select: {id: true, name: true, email: true, streakDays: true, joinedAt: true, avatarUrl: true},
+            // include: {
+            //     settings: {
+            //         select: {
+            //             dailyCheckInReminder: true,
+            //             journalPromptReminder: true,
+            //             appLock: true,
+            //             hidePreviews: true
+            //         },
+            //     },
+            // }
         });
 
         await this.cacheManager.set(userCacheKey, userData);
@@ -66,7 +67,15 @@ export class UserService {
         }
     }
 
-    updateSettings(user, dto: any) {
+    settings(userId: string) {
+        return this.prisma.settings.findFirst({
+            where: {userId},
+            select: {dailyCheckInReminder: true, journalPromptReminder: true, appLock: true, hidePreviews: true}
+        });
+    }
+
+    async updateSettings(user, dto: any) {
+        await this.cacheManager.del(`user:${user.userId}`);
         return this.prisma.settings.upsert({
             where: {userId: user.userId},
             update: {

@@ -17,8 +17,8 @@ import {FileInterceptor} from "@nestjs/platform-express";
 import {MagicFileTypeValidator} from "./file-type.validator";
 import {memoryStorage} from "multer";
 
-@UseGuards(JwtAuthGuard)
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
     constructor(public userService: UserService) {
     }
@@ -52,6 +52,11 @@ export class UsersController {
     ) {
 
         return this.userService.updateProfile(user, dto, file);
+    }
+
+    @Get('me/settings')
+    getSettings(@CurrentUser() user) {
+        return this.userService.settings(user.userId)
     }
 
     @Patch('me/settings')
