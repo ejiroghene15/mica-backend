@@ -14,7 +14,8 @@ import {EmailProcessor} from "./mail.processor";
             transport: {
                 host: env('MAIL_HOST'),
                 port: Number(env('MAIL_PORT')),
-                secure: true,
+                secure: env('MAIL_SECURE') === 'true',
+                ignoreTLS: env('MAIL_IGNORE_TLS') === 'true',
                 auth: {
                     user: env('MAIL_USER'),
                     pass: env('MAIL_PASSWORD'),

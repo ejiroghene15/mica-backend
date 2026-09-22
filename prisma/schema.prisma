@@ -37,6 +37,16 @@ enum ChatRole {
   mica
 }
 
+enum Category {
+  work
+  relationships
+  health
+  money
+  rest
+  myself
+}
+
+
 // ------------------------------------------------------------------
 // Models
 // ------------------------------------------------------------------
@@ -56,9 +66,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  checkIns       CheckIn[]
+  // checkIns       CheckIn[]
   journalEntries JournalEntry[]
   conversations  Conversation[]
+  layers Layers[] 
 
   @@map("users")
 }
@@ -78,44 +89,44 @@ model Mood {
   @@map("moods")
 }
 
-model CheckIn {
+
+/* model CheckIn {
   id        String   @id @default(cuid())
   userId    String
   mood      MoodKey
   /// 1–5 intensity
   intensity Int
+  category Category  
   note      String?
   tags      String[] @default([])
   createdAt DateTime @default(now())
-
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   layer MicaLayer?
-
   @@index([userId, createdAt])
   @@map("check_ins")
-}
+} */
 
 /// A single accreted layer of "Your Mica". One per check-in (1:1).
-model MicaLayer {
-  id        String   @id @default(cuid())
-  checkInId String   @unique
-  mood      MoodKey
-  /// resolved hex for rendering
-  color     String
+  
+model Layers {
+  id        String    @id @default(cuid())
+  userId    String    
+  emotion   MoodKey
+  intensity Int
+  category Category
   note      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
 
-  checkIn CheckIn @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  @@map("layers")
+} 
 
-  @@map("mica_layers")
-}
+
 
 model JournalPrompt {
   id   String @id @default(cuid())
   text String
-
   entries JournalEntry[]
-
   @@map("journal_prompts")
 }
 

@@ -5,15 +5,18 @@ import {ConfigModule} from "@nestjs/config";
 import {ThrottlerGuard} from "@nestjs/throttler";
 import {AuthModule} from './auth/auth.module';
 import {APP_GUARD} from "@nestjs/core";
-import {UsersModule} from './users/users.module';
+
 import {CoreModule} from './core/core.module';
+import { MicaCheckinModule } from './modules/mica-checkin/mica-checkin.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot(),
         CoreModule,
         AuthModule,
-        UsersModule
+        MicaCheckinModule
+        
+
     ],
     controllers: [AppController],
     providers: [
