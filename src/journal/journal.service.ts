@@ -39,7 +39,7 @@ export class JournalService {
                 select: this.selectedFields,
                 orderBy: {createdAt: 'desc'}
             }),
-            this.prisma.journalEntry.count(),
+            this.prisma.journalEntry.count({where: {userId: userId}}),
         ]);
 
         return {
@@ -75,5 +75,13 @@ export class JournalService {
         } catch (e) {
             return {message: "Entry not found"}
         }
+    }
+
+    getPrompts() {
+        return this.prisma.journalPrompt.findMany({select: {id: true, text: true}})
+    }
+
+    addNewPrompt(text: string) {
+        return this.prisma.journalPrompt.create({data: {text}, select: {id: true, text: true}})
     }
 }

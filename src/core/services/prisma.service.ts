@@ -1,10 +1,10 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, OnModuleInit} from '@nestjs/common';
 import {PrismaClient} from '../../../generated/prisma/client';
 import {env} from 'prisma/config';
 import {PrismaPg} from '@prisma/adapter-pg';
 
 @Injectable()
-export class PrismaService extends PrismaClient {
+export class PrismaService extends PrismaClient implements OnModuleInit {
     constructor() {
         const adapter = new PrismaPg({connectionString: env('DATABASE_URL')});
         new PrismaClient({adapter});
@@ -13,9 +13,14 @@ export class PrismaService extends PrismaClient {
             omit: {
                 user: {
                     password: true,
-                    resetPasswordToken: true
+                    resetPasswordToken: true,
+                    role: true
                 }
             }
         });
+    }
+
+    async onModuleInit() {
+        await this.$connect();
     }
 }

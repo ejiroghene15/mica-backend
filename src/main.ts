@@ -16,7 +16,7 @@ async function bootstrap() {
         new ValidationPipe({
             whitelist: true,
             transform: true,
-        }),
+        })
     );
 
     // * Use global exception filter to handle HTTP exceptions and format error responses

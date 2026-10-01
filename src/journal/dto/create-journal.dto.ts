@@ -10,3 +10,9 @@ export class CreateJournalDto {
     @IsEnum(Mood, {message: 'Mood must be one of: growth, joy, calm, tender, rest, heavy'})
     mood: Mood
 }
+
+export class CreatePromptDto {
+    @IsNotEmpty()
+    @IsString({message: 'Prompt text must be a string'})
+    text: string
+}
