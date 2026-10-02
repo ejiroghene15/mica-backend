@@ -7,6 +7,7 @@ generator client {
   provider     = "prisma-client"
   output       = "../generated/prisma"
   moduleFormat = "cjs"
+  // importFileExtension = "ts"
 }
 
 datasource db {
@@ -42,10 +43,12 @@ enum ChatRole {
 // ------------------------------------------------------------------
 
 model User {
-  id                  String    @id @default(cuid())
+  id                  String    @id @unique @default(cuid())
   name                String
   email               String    @unique
   password            String
+  role                String?   @default("user")
+  avatarUrl           String?
   refreshToken        String?
   resetPasswordToken  String?
   resetPasswordExpiry DateTime?
@@ -59,6 +62,7 @@ model User {
   checkIns       CheckIn[]
   journalEntries JournalEntry[]
   conversations  Conversation[]
+  settings       Settings?
 
   @@map("users")
 }
@@ -178,4 +182,23 @@ model ChatMessage {
 
   @@index([conversationId, createdAt])
   @@map("chat_messages")
+}
+
+model Settings {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // reminders
+  dailyCheckInReminder  Boolean @default(true)
+  journalPromptReminder Boolean @default(true)
+
+  // privacy
+  appLock      Boolean @default(false)
+  hidePreviews Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
 }

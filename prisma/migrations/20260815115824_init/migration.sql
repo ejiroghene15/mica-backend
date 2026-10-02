@@ -12,8 +12,16 @@ CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "avatarUrl" TEXT,
+    "refreshToken" TEXT,
+    "resetPasswordToken" TEXT,
+    "resetPasswordExpiry" TIMESTAMP(3),
+    "onboarding_complete" BOOLEAN NOT NULL DEFAULT false,
     "streakDays" INTEGER NOT NULL DEFAULT 0,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );

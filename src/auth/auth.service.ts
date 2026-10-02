@@ -26,6 +26,7 @@ export class AuthService {
 
         try {
             SignupDto.password = await HashPassword(SignupDto.password)
+
             await this.prisma.user.create({data: SignupDto, select: {id: true, name: true, email: true}})
 
             // Send welcome email after successful registration
@@ -40,7 +41,7 @@ export class AuthService {
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.prisma.user.findFirst({
             where: {email},
-            select: {id: true, password: true, email: true}
+            select: {id: true, password: true, email: true, role: true}
         })
 
         if (!user) return null
@@ -49,24 +50,23 @@ export class AuthService {
         if (!isPasswordValid) {
             return null;
         }
-
         const {password: _, ...safeUser} = user;
         return safeUser;
     }
 
     async login(user: any) {
-        const tokens = await this.generateTokens(user.id, user.email);
+        const tokens = await this.generateTokens(user);
         await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
         return tokens;
     }
 
-    private async generateTokens(userId: string, email: string) {
-        const payload = {sub: userId, email};
+    private async generateTokens(user) {
+        const payload: any = {sub: user.id, email: user.email, role: user.role};
 
         const [access_token, refresh_token] = await Promise.all([
             this.jwtService.signAsync(payload, {
                 secret: jwtConstants.secret,
-                expiresIn: '15m',
+                expiresIn: '1d',
             }),
             this.jwtService.signAsync(payload, {
                 secret: jwtConstants.refresh_secret, // different secret from access token
