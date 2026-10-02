@@ -9,11 +9,11 @@ import {UsersModule} from './users/users.module';
 import {CoreModule} from './core/core.module';
 import {JournalModule} from './journal/journal.module';
 import {ChatModule} from "./chat/chat.module";
-import { HealthModule } from './health/health.module';
+import {HealthModule} from './health/health.module';
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({isGlobal: true}),
         CoreModule,
         AuthModule,
         UsersModule,
