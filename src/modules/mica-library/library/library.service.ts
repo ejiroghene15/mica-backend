@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import { ResourceRepository } from './entities/resource-repo';
-import { QueryResourceDto } from './dto/query-resource.dto';
-import { IApiResponse } from '../common/interfaces/api-response.interface';
-import { buildResponse } from '../common/utils/build-response.util';
+import type { Cache } from 'cache-manager';
+import { ResourceRepository } from '../entities/resource-repo';
+import { QueryResourceDto } from '../dto/query-resource.dto';
+import { IApiResponse,buildResponse } from '../interfaces/api-response.interfaces';
+
 
 
 @Injectable()

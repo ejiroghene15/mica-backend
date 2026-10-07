@@ -40,10 +40,10 @@ export class MicaCheckinController {
 
 
   // @UseGuards(AuthGuard('jwt'))
-  @Get('layers')
-  async getRecentLayers(@Req() req: any, @Query() query: QueryRecentLayersDto) {
-    const userId = req.user.id;
-    return this.micaService.getRecentLayers(userId, query.range ?? 'week');
-  }
+  // @Get('layers')
+  // async getRecentLayers(@Req() req: any, @Query() query: QueryRecentLayersDto) {
+  //   const userId = req.user.id;
+  //   return this.micaService.getRecentLayers(userId, query.range ?? 'week');
+  // }
     }
 

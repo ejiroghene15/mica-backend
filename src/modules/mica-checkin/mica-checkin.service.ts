@@ -60,7 +60,7 @@ export class MicaCheckinService {
 async getRecentLayers(userId: string, range: 'week' | 'month' | 'all'): Promise<IApiResponse> {
   const since = this.resolveRangeStart(range);
 
-  const layers = await this.layerRepository.findRecentForUser(userId, since);
+  const layers = await this.layerRepository.findByUser(userId);
 
   const formatted = layers.map((layer: any) => ({
     id: layer.id,

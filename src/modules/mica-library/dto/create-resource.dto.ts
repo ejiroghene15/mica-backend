@@ -1,5 +1,5 @@
 import { IsEnum, IsString, IsInt, Min, IsOptional, IsBoolean } from 'class-validator';
-import { ResourceKind } from '../../../generated/prisma/client';
+import { ResourceKind } from '../../../../generated/prisma/enums';
 
 export class CreateResourceDto {
   @IsString()
@@ -9,17 +9,17 @@ export class CreateResourceDto {
   title!: string;
 
   @IsEnum(ResourceKind)
-  kind: ResourceKind;
+  kind!: ResourceKind;
 
   @IsInt()
   @Min(1)
-  durationMin: number;
+  durationMin!: number;
 
   @IsString()
-  category: string;
+  category!: string;
 
   @IsString()
-  excerpt: string;
+  excerpt! : string;
 
   @IsOptional()
   @IsString()

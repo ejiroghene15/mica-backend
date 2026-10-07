@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRepository } from '../../common/shared/base.repository';
-import { PrismaService } from '../../core/services/prisma.service';
+import { BaseRepository } from '../../../common/shared/baseRepsitory';
+import { PrismaService } from '../../../core/services/prisma.service';
 import { QueryResourceDto } from '../dto/query-resource.dto';
 
 @Injectable()
