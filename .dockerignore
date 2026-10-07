@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+generated
+
+# IDE and OS files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Coverage and tests
+coverage
+.nyc_output
+
+# Documentation
+skills-lock.json
+
+# Temporary files
+z.ts
