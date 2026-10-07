@@ -26,7 +26,8 @@ async function bootstrap() {
     app.useGlobalInterceptors(new ResponseInterceptor())
 
     // * Start the server on the specified port or default to 3000
-    await app.listen(env('PORT') ?? 3000);
+    // * Bind to 0.0.0.0 for Fly.io compatibility
+    await app.listen(env('PORT') ?? 3000, '0.0.0.0');
 }
 
 bootstrap();

@@ -14,6 +14,7 @@ import {env} from "prisma/config";
             connection: {
                 host: env('REDIS_HOST'),
                 port: parseInt(env('REDIS_PORT')),
+                url: env('REDIS_URL')
             },
         }),
 
