@@ -3,22 +3,20 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files first for better layer caching
+# Pin pnpm instead of "latest" so builds don't change under you
+RUN corepack enable && corepack prepare pnpm@12.10.1 --activate
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install pnpm globally
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Allow the dependency build scripts pnpm blocks by default
+RUN printf '\nallowBuilds:\n  "@google/genai": true\n  "@prisma/engines": true\n  bcrypt: true\n  msgpackr-extract: true\n  prisma: true\n  protobufjs: true\n  unrs-resolver: true\n' >> pnpm-workspace.yaml
 
-# Install all dependencies (including devDependencies for building)
 RUN pnpm install --frozen-lockfile
 
-# Copy source code and Prisma schema
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 
-# Build the NestJS application
 RUN pnpm build
 
 # ---- Stage 2: Production ----
@@ -26,25 +24,20 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-# Install pnpm globally
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@12.10.1 --activate
 
-# Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install only production dependencies
+RUN printf '\nallowBuilds:\n  "@google/genai": true\n  "@prisma/engines": true\n  bcrypt: true\n  msgpackr-extract: true\n  prisma: true\n  protobufjs: true\n  unrs-resolver: true\n' >> pnpm-workspace.yaml
+
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built artifacts from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/generated ./generated
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# Expose the application port
 EXPOSE 3000
-
-# Set node environment to production
 ENV NODE_ENV=production
 
-# Start the application
 CMD ["node", "dist/main"]
