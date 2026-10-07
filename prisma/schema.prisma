@@ -43,26 +43,27 @@ enum ChatRole {
 // ------------------------------------------------------------------
 
 model User {
-  id                  String    @id @unique @default(cuid())
-  name                String
-  email               String    @unique
-  password            String
-  role                String?   @default("user")
-  avatarUrl           String?
-  refreshToken        String?
-  resetPasswordToken  String?
-  resetPasswordExpiry DateTime?
-  onboardingComplete  Boolean   @default(false) @map("onboarding_complete")
-  streakDays          Int       @default(0)
-  joinedAt            DateTime  @default(now())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  checkIns       CheckIn[]
-  journalEntries JournalEntry[]
-  conversations  Conversation[]
-  settings       Settings?
+  id                      String         @id @unique @default(cuid())
+  name                    String
+  email                   String         @unique
+  password                String
+  role                    String?        @default("user")
+  avatarUrl               String?
+  emailVerified           Boolean        @default(false) @map("email_verified")
+  emailVerificationToken  String?        @map("email_verification_token")
+  emailVerificationExpiry DateTime?      @map("email_verification_expiry") @db.Timestamp()
+  refreshToken            String?
+  resetPasswordToken      String?
+  resetPasswordExpiry     DateTime?
+  onboardingComplete      Boolean        @default(false) @map("onboarding_complete")
+  streakDays              Int            @default(0)
+  joinedAt                DateTime       @default(now())
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @default(now()) @updatedAt
+  checkIns                CheckIn[]
+  journalEntries          JournalEntry[]
+  conversations           Conversation[]
+  settings                Settings?
 
   @@map("users")
 }

@@ -11,7 +11,7 @@ export class MailService {
     ) {
     }
 
-    async sendWelcomeEmail(email: string, name: string) {
-        await this.mailQueue.add('welcome-email', {name, email})
+    async sendWelcomeEmail({email, name, verificationUrl}: { email: string; name: string; verificationUrl: string }) {
+        await this.mailQueue.add('welcome-email', {name, email, verificationUrl})
     }
 }
