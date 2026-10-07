@@ -11,13 +11,11 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-# Dummy value: prisma.config.ts requires DATABASE_URL to be set, but generate never connects
-ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db"
+# Placeholder only for this command: prisma.config.ts needs DATABASE_URL to exist, but generate never connects
+RUN DATABASE_URL="postgresql://user:pass@localhost:5432/db" ./node_modules/.bin/prisma generate
 
-# Call the binary directly so pnpm doesn't re-run its dependency check
-RUN ./node_modules/.bin/prisma generate
-
-RUN ./node_modules/.bin/nest build
+# Build, then print the output layout so you can confirm where main.js ends up
+RUN ./node_modules/.bin/nest build && ls -R dist | head -30
 
 # ---- Stage 2: Production ----
 FROM node:22-alpine AS production
@@ -38,4 +36,4 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 EXPOSE 3000
 ENV NODE_ENV=production
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
