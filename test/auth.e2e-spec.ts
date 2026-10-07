@@ -57,20 +57,15 @@ describe('Auth (e2e)', () => {
         });
 
         it('should return 409 when registering with the same email twice', async () => {
-            await request(app.getHttpServer())
-                .post('/auth/register')
-                .send(testUser)
-                .expect(201);
-
             const response = await request(app.getHttpServer())
                 .post('/auth/register')
                 .send(testUser)
                 .expect(409);
             expect(response.body).toEqual({
                 success: false,
-                data: expect.objectContaining({
-                    message: expect.any(String),
-                }),
+                statusCode: 409,
+                message: expect.any(String),
+                timestamp: expect.any(String),
             });
         });
 
@@ -81,9 +76,11 @@ describe('Auth (e2e)', () => {
                 .expect(400);
             expect(response.body).toEqual({
                 success: false,
-                data: expect.objectContaining({
-                    message: expect.any(String),
-                }),
+                statusCode: 400,
+                message: expect.arrayContaining([
+                    expect.any(String)
+                ]),
+                timestamp: expect.any(String),
             });
         });
 
@@ -98,9 +95,11 @@ describe('Auth (e2e)', () => {
                 .expect(400);
             expect(response.body).toEqual({
                 success: false,
-                data: expect.objectContaining({
-                    message: expect.any(String),
-                }),
+                statusCode: 400,
+                message: expect.arrayContaining([
+                    expect.any(String)
+                ]),
+                timestamp: expect.any(String),
             });
         });
 
@@ -139,25 +138,45 @@ describe('Auth (e2e)', () => {
                 });
         });
 
-        it('should return 401 when login password is incorrect', () => {
-            return request(app.getHttpServer())
+        it('should return 401 when login password is incorrect', async () => {
+            const response = await request(app.getHttpServer())
                 .post('/auth/login')
                 .send({email: loginUser.email, password: 'wrongpassword'})
                 .expect(401);
+            expect(response.body).toEqual({
+                success: false,
+                statusCode: 401,
+                message: expect.any(String),
+                timestamp: expect.any(String),
+            });
         });
 
-        it('should return 401 when login email does not exist', () => {
-            return request(app.getHttpServer())
+        it('should return 401 when login email does not exist', async () => {
+            const response = await request(app.getHttpServer())
                 .post('/auth/login')
                 .send({email: 'nonexistent@example.com', password: 'password123'})
                 .expect(401);
+            expect(response.body).toEqual({
+                success: false,
+                statusCode: 401,
+                message: expect.any(String),
+                timestamp: expect.any(String),
+            });
         });
 
-        it('should return 400 when login body is missing required fields', () => {
-            return request(app.getHttpServer())
+        it('should return 400 when login body is missing required fields', async () => {
+            const response = await request(app.getHttpServer())
                 .post('/auth/login')
                 .send({email: loginUser.email})
                 .expect(400);
+            expect(response.body).toEqual({
+                success: false,
+                statusCode: 400,
+                message: expect.arrayContaining([
+                    expect.any(String)
+                ]),
+                timestamp: expect.any(String),
+            });
         });
 
         // Clean up the login test user
