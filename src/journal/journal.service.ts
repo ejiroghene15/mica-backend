@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, NotFoundException} from '@nestjs/common';
 import {CreateJournalDto} from './dto/create-journal.dto';
 import {UpdateJournalDto} from './dto/update-journal.dto';
 import {PrismaService} from "../core/services/prisma.service";
@@ -73,7 +73,7 @@ export class JournalService {
             await this.prisma.journalEntry.delete({where: {id, userId}});
             return {message: "Entry removed"}
         } catch (e) {
-            return {message: "Entry not found"}
+            throw new NotFoundException("Entry not found")
         }
     }
 
