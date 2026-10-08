@@ -55,8 +55,6 @@ export class MicaCheckinService {
   }
 
 
-  // src/mica-checkin/mica.service.ts (add this method alongside getAggregate)
-
 async getRecentLayers(userId: string, range: 'week' | 'month' | 'all'): Promise<IApiResponse> {
   const since = this.resolveRangeStart(range);
 
@@ -98,52 +96,4 @@ private buildNoteSnippet(note: string | null, maxLength = 60): string | null {
   if (!note) return null;
   return note.length > maxLength ? `${note.slice(0, maxLength).trim()}…` : note;
 }
-  // async getAggregate(userId: string): Promise<IApiResponse> {
-  //   const total = await this.layerRepository.count({ userId });
-
-  //   const grouped = await this.layerRepository['delegate']['groupBy']({
-  //     by: ['emotion'],
-  //     where: { userId },
-  //     _count: { emotion: true },
-  //   });
-
-  //   const dates = await this.layerRepository.find({
-  //     where: { userId },
-  //     orderBy: { createdAt: 'desc' },
-  //   });
-
-  //   const breakdown = grouped.map((group: any) => ({
-  //     emotion: group.emotion,
-  //     color: EMOTION_COLOR_MAP[group.emotion as keyof typeof EMOTION_COLOR_MAP],
-  //     count: group._count.emotion,
-  //   }));
-
-  //   const streak = this.streakService.calculateStreak(dates.map((d: any) => d.createdAt));
-
-  //   return buildResponse(true, 'Aggregate retrieved successfully', {
-  //     totalLayers: total,
-  //     breakdown,
-  //     streak,
-  //   });
-  // }
-
-  // async getRecentLayers(userId: string, query: GetLayersQueryDto): Promise<IApiResponse> {
-  //   const days = RANGE_TO_DAYS[query.range] ?? 7;
-  //   const since = new Date();
-  //   since.setDate(since.getDate() - days);
-
-  //   const layers = await this.layerRepository.find({
-  //     where: { userId, createdAt: { gte: since } },
-  //     orderBy: { createdAt: 'desc' },
-  //   });
-
-  //   const data = layers.map((layer: any) => ({
-  //     id: layer.id,
-  //     emotion: layer.emotion,
-  //     noteSnippet: layer.note ? layer.note.slice(0, 80) : null,
-  //     date: layer.createdAt,
-  //   }));
-
-  //   return buildResponse(true, 'Layers retrieved successfully', data);
-  // }
 }
