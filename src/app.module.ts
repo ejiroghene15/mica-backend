@@ -11,16 +11,15 @@ import {JournalModule} from './journal/journal.module';
 import {ChatModule} from "./chat/chat.module";
 import {HealthModule} from './health/health.module';
 import {MicaCheckinModule} from './modules/mica-checkin/mica-checkin.module';
+import {UsersModule} from "./users/users.module";
 
 @Module({
     imports: [
         ConfigModule.forRoot({isGlobal: true}),
         CoreModule,
         AuthModule,
-
         MicaCheckinModule,
-
-
+        UsersModule,
         JournalModule,
         ChatModule,
         HealthModule,
