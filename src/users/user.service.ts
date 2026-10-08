@@ -1,7 +1,7 @@
 import {BadGatewayException, Inject, Injectable} from '@nestjs/common';
 import {PrismaService} from "../core/services/prisma.service";
 import {Cache, CACHE_MANAGER} from "@nestjs/cache-manager";
-import {UserProfileDto} from "./dto/user-profile.dto";
+import {UserProfileDto, UserResponseDto} from "./dto/user-profile.dto";
 import {SupabaseService} from "../common/services/supabase.service";
 
 @Injectable()
@@ -13,34 +13,34 @@ export class UserService {
     ) {
     }
 
-    async profile(userId: string) {
+    async profile(userId: string): Promise<UserResponseDto> {
         const userCacheKey = `user:${userId}`;
 
-        let userData = await this.cacheManager.get(userCacheKey);
+        let userData = await this.cacheManager.get<UserResponseDto>(userCacheKey);
 
         if (userData) return userData;
 
-        userData = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findUnique({
             where: {id: userId},
-            select: {id: true, name: true, email: true, streakDays: true, joinedAt: true, avatarUrl: true},
-            // include: {
-            //     settings: {
-            //         select: {
-            //             dailyCheckInReminder: true,
-            //             journalPromptReminder: true,
-            //             appLock: true,
-            //             hidePreviews: true
-            //         },
-            //     },
-            // }
+            select: {name: true, email: true, avatarUrl: true},
         });
 
-        await this.cacheManager.set(userCacheKey, userData);
+        if (!user) {
+            throw new BadGatewayException("User not found");
+        }
 
-        return userData;
+        const response: UserResponseDto = {
+            name: user.name,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+        };
+
+        await this.cacheManager.set(userCacheKey, response);
+
+        return response;
     }
 
-    async updateProfile(user: any, dto: UserProfileDto, file: Express.Multer.File | undefined) {
+    async updateProfile(user: any, dto: UserProfileDto, file: Express.Multer.File | undefined): Promise<UserResponseDto> {
         let avatarUrl: string | undefined = undefined;
 
         try {
@@ -55,13 +55,19 @@ export class UserService {
                     name: dto.name,
                     avatarUrl,
                 },
-                omit: {refreshToken: true},
+                select: {name: true, email: true, avatarUrl: true},
             });
+
+            const response: UserResponseDto = {
+                name: updatedUser.name,
+                email: updatedUser.email,
+                avatarUrl: updatedUser.avatarUrl,
+            };
 
             // Invalidate the cache for this user
             await this.cacheManager.del(`user:${user.userId}`);
 
-            return updatedUser;
+            return response;
         } catch (error) {
             throw new BadGatewayException("An error occurred while updating the profile: " + error.message);
         }

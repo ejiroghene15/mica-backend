@@ -1,9 +1,18 @@
-import {IsBoolean, IsNotEmpty, IsString} from "class-validator";
+import {IsBoolean, IsNotEmpty, IsOptional, IsString} from "class-validator";
 
 export class UserProfileDto {
     @IsNotEmpty()
     @IsString()
     name: string
+}
+
+export class UserResponseDto {
+    name: string
+
+    email: string
+
+    @IsOptional()
+    avatarUrl: string | null
 }
 
 export class UserSettingsDto {
