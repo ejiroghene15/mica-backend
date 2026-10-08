@@ -22,7 +22,7 @@ export class UserService {
 
         const user = await this.prisma.user.findUnique({
             where: {id: userId},
-            select: {name: true, email: true, avatarUrl: true},
+            select: {name: true, email: true, avatarUrl: true, joinedAt: true, streakDays: true},
         });
 
         if (!user) {
@@ -33,6 +33,8 @@ export class UserService {
             name: user.name,
             email: user.email,
             avatarUrl: user.avatarUrl,
+            joinedAt: user.joinedAt,
+            streakDays: user.streakDays
         };
 
         await this.cacheManager.set(userCacheKey, response);
@@ -55,13 +57,15 @@ export class UserService {
                     name: dto.name,
                     avatarUrl,
                 },
-                select: {name: true, email: true, avatarUrl: true},
+                select: {name: true, email: true, avatarUrl: true, joinedAt: true, streakDays: true},
             });
 
             const response: UserResponseDto = {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 avatarUrl: updatedUser.avatarUrl,
+                joinedAt: updatedUser.joinedAt,
+                streakDays: updatedUser.streakDays
             };
 
             // Invalidate the cache for this user
@@ -80,7 +84,7 @@ export class UserService {
         });
     }
 
-    async updateSettings(user, dto: any) {
+    async updateSettings(user: { userId: any; }, dto: any) {
         await this.cacheManager.del(`user:${user.userId}`);
         return this.prisma.settings.upsert({
             where: {userId: user.userId},

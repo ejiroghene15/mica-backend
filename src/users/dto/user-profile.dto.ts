@@ -11,6 +11,10 @@ export class UserResponseDto {
 
     email: string
 
+    joinedAt: Date
+
+    streakDays: number
+
     @IsOptional()
     avatarUrl: string | null
 }
