@@ -8,13 +8,15 @@ import {APP_GUARD} from "@nestjs/core";
 
 import {CoreModule} from './core/core.module';
 import { MicaCheckinModule } from './modules/mica-checkin/mica-checkin.module';
+import { MicaChatModule } from './modules/mica-chat/mica-chat.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot(),
         CoreModule,
         AuthModule,
-        MicaCheckinModule
+        MicaCheckinModule,
+        MicaChatModule
         
 
     ],

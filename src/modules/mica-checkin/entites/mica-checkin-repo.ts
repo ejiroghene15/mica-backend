@@ -41,6 +41,14 @@ export class LayerRepository extends BaseRepository {
   countTotalForUser(userId: string) {
     return this.delegate.count({ where: { userId } });
   }
-
+findRecentForUser(userId: string, since: Date | null) {
+  return this.delegate.findMany({
+    where: {
+      userId,
+      createdAt: { gte: since },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
 
 }

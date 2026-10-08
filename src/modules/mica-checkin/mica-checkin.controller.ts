@@ -2,6 +2,7 @@ import { Body, Controller, Get, Logger, Post, Query, UseGuards } from '@nestjs/c
 import { MicaCheckinService } from './mica-checkin.service';
 import { CreateCheckInsSchema } from './dto/create-layer.dto';
 import type { CreateCheckInsDto } from './dto/create-layer.dto';
+import type { QueryRecentLayersDto } from './dto/query-recent-layers.dto.ts';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { buildResponse, IApiResponse } from './interfaces/api-response.interface';
 import { JwtAuthGuard } from 'src/auth/jwt.strategy';
@@ -42,9 +43,8 @@ export class MicaCheckinController {
 
   // @UseGuards(AuthGuard('jwt'))
   @Get('layers')
-  async getRecentLayers(@Req() req: any, @Query() query: QueryRecentLayersDto) {
-    const userId = req.user.id;
-    return this.micaService.getRecentLayers(userId, query.range ?? 'week');
-  }
-    }
-
+async getRecentLayers(@Query() query: QueryRecentLayersDto) {
+  const userId = 'cmj8k2x4p0000v3l5g7h9q1ab'; // TODO: replace with the authenticated user
+  return this.micaCheckinService.getRecentLayers(userId, query.range ?? 'week');
+}
+}

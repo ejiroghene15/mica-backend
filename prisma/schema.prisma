@@ -190,3 +190,20 @@ model ChatMessage {
   @@index([conversationId, createdAt])
   @@map("chat_messages")
 }
+enum LlmProvider {
+  openai
+  anthropic
+}
+
+model LlmConfig {
+  id           String      @id @default(cuid())
+  provider     LlmProvider
+  model        String
+  systemPrompt String
+  temperature  Float       @default(0.7)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("llm_configs")
+}
