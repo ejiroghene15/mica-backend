@@ -2,7 +2,7 @@ import {Test, TestingModule} from '@nestjs/testing';
 import {INestApplication, ValidationPipe} from '@nestjs/common';
 import request from 'supertest';
 import {App} from 'supertest/types';
-import {AuthModule} from '../src/auth/auth.module';
+import {AuthModule} from '../src/modules/auth/auth.module';
 import {CoreModule} from '../src/core/core.module';
 import {PrismaService} from '../src/core/services/prisma.service';
 import {ResponseInterceptor} from '../src/common/interceptors/response.interceptor';

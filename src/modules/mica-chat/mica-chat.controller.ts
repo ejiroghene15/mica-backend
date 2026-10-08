@@ -1,23 +1,26 @@
 // src/chat/chat.controller.ts
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { MicaChatService } from './mica-chat.service';
-import { CreateMessageDto } from './dto/create-message.dto';
+import {Body, Controller, Get, Param, Post, UseGuards} from '@nestjs/common';
+import {MicaChatService} from './mica-chat.service';
+import {CreateMessageDto} from './dto/create-message.dto';
+import {CurrentUser} from "../../common/decorators/current-user.decorator";
+import {JwtAuthGuard} from "../auth/jwt.strategy";
+import type {AuthenticatedUser} from "../../common/types";
 
-// @UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class MicaChatController {
-  constructor(private readonly chatService: MicaChatService) {}
+    constructor(private readonly chatService: MicaChatService) {
+    }
 
-  @Post('messages')
-   
-  sendMessage( @Body() dto: CreateMessageDto) {
-    const userId = 'cmj8k2x4p0000v3l5g7h9q1ab';
-    return this.chatService.sendMessage(userId, dto);
-  }
+    @Post('messages')
 
-  @Get('conversations/:id/history')
-  getHistory(@Param('id') conversationId: string) {
-    return this.chatService.getHistory(conversationId);
-  }
+    sendMessage(@Body() dto: CreateMessageDto, @CurrentUser() user: AuthenticatedUser) {
+        const userId = user.userId;
+        return this.chatService.sendMessage(userId, dto);
+    }
+
+    @Get('conversations/:id/history')
+    getHistory(@Param('id') conversationId: string) {
+        return this.chatService.getHistory(conversationId);
+    }
 }

@@ -9,13 +9,14 @@ import {
     UseGuards,
     UseInterceptors
 } from '@nestjs/common';
-import {CurrentUser} from "../common/decorators/current-user.decorator";
+import {CurrentUser} from "../../common/decorators/current-user.decorator";
 import {JwtAuthGuard} from "../auth/jwt.strategy";
 import {UserService} from "./user.service";
 import {UserProfileDto, UserSettingsDto} from "./dto/user-profile.dto";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {MagicFileTypeValidator} from "./file-type.validator";
 import {memoryStorage} from "multer";
+import type {AuthenticatedUser} from "../../common/types";
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -24,7 +25,7 @@ export class UsersController {
     }
 
     @Get('me')
-    profile(@CurrentUser() user): object {
+    profile(@CurrentUser() user: AuthenticatedUser): object {
         return this.userService.profile(user.userId);
     }
 
@@ -46,23 +47,23 @@ export class UsersController {
                 fileIsRequired: false,
             }),
         )
-            file: Express.Multer.File | undefined,
+        file: Express.Multer.File | undefined,
         @Body() dto: UserProfileDto,
-        @CurrentUser() user
+        @CurrentUser() user: AuthenticatedUser
     ) {
 
         return this.userService.updateProfile(user, dto, file);
     }
 
     @Get('me/settings')
-    getSettings(@CurrentUser() user) {
+    getSettings(@CurrentUser() user: AuthenticatedUser) {
         return this.userService.settings(user.userId)
     }
 
     @Patch('me/settings')
     updateSettings(
         @Body() dto: UserSettingsDto,
-        @CurrentUser() user
+        @CurrentUser() user: AuthenticatedUser
     ) {
         return this.userService.updateSettings(user, dto);
     }

@@ -1,8 +1,9 @@
 import {BadGatewayException, Inject, Injectable} from '@nestjs/common';
-import {PrismaService} from "../core/services/prisma.service";
+import {PrismaService} from "../../core/services/prisma.service";
 import {Cache, CACHE_MANAGER} from "@nestjs/cache-manager";
 import {UserProfileDto, UserResponseDto} from "./dto/user-profile.dto";
-import {SupabaseService} from "../common/services/supabase.service";
+import {SupabaseService} from "../../common/services/supabase.service";
+import {AuthenticatedUser} from "../../common/types";
 
 @Injectable()
 export class UserService {
@@ -42,7 +43,7 @@ export class UserService {
         return response;
     }
 
-    async updateProfile(user: any, dto: UserProfileDto, file: Express.Multer.File | undefined): Promise<UserResponseDto> {
+    async updateProfile(user: AuthenticatedUser, dto: UserProfileDto, file: Express.Multer.File | undefined): Promise<UserResponseDto> {
         let avatarUrl: string | undefined = undefined;
 
         try {
@@ -84,7 +85,7 @@ export class UserService {
         });
     }
 
-    async updateSettings(user: { userId: any; }, dto: any) {
+    async updateSettings(user: AuthenticatedUser, dto: any) {
         await this.cacheManager.del(`user:${user.userId}`);
         return this.prisma.settings.upsert({
             where: {userId: user.userId},

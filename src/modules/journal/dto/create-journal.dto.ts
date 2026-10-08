@@ -1,5 +1,5 @@
 import {IsEnum, IsNotEmpty, IsString, MinLength} from "class-validator";
-import {Mood} from "../../common/types";
+import {Mood} from "../../../common/types";
 
 export class CreateJournalDto {
     @IsNotEmpty()

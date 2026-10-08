@@ -1,9 +1,10 @@
 // src/mica-checkin/mica-checkin.service.ts
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { IApiResponse, buildResponse } from './interfaces/api-response.interface';
 import { LayerRepository } from '../mica-checkin/entites/mica-checkin-repo';
 import { CreateLayerDto } from './dto/create-layer.dto';
 import { formatEmotionBreakdown } from 'src/common/utils/helperFn';
+import { PrismaService } from 'src/core/services/prisma.service';
 // import { StreakService } from './streak.service';
 
 const RANGE_TO_DAYS: Record<string, number> = {
@@ -19,9 +20,16 @@ export class MicaCheckinService {
 
   constructor(
     private readonly layerRepository: LayerRepository,
+    private readonly prisma: PrismaService,
     // private readonly streakService: StreakService,
   ) {}
   async createLayer(userId: string, dto: CreateLayerDto): Promise<IApiResponse> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      this.logger.error(`User not found for userId: ${userId}`);
+      throw new NotFoundException('User not found. Please log in again.');
+    }
+
     const layer = await this.layerRepository.create({
      userId,
       emotion: dto.emotion,

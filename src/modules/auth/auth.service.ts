@@ -1,11 +1,11 @@
 import {BadGatewayException, BadRequestException, ConflictException, Injectable} from "@nestjs/common";
-import {PrismaService} from "../core/services/prisma.service";
+import {PrismaService} from "../../core/services/prisma.service";
 import {SignupDto} from "./auth.dto";
 import {JwtService} from "@nestjs/jwt";
-import {GenerateVerificationToken, HashToken} from "../common/utils/password-hash";
+import {GenerateVerificationToken, HashToken} from "../../common/utils/password-hash";
 import bcrypt from "bcrypt";
 import {jwtConstants} from "./constants";
-import {MailService} from "../mail/mail.service";
+import {MailService} from "../../mail/mail.service";
 import {ConfigService} from "@nestjs/config";
 
 @Injectable()

@@ -12,7 +12,7 @@ import {Server, Socket} from "socket.io";
 import {JwtService} from "@nestjs/jwt";
 import {jwtConstants} from "../auth/constants";
 import {ChatMessageDto} from "./dto/create-chat.dto";
-import {AiService} from "../common/services/ai.service";
+import {AiService} from "../../common/services/ai.service";
 
 @WebSocketGateway({namespace: 'chat'})
 export class ChatGateway implements OnGatewayConnection {

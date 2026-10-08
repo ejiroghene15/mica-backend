@@ -1,7 +1,7 @@
 import {Controller, Get} from '@nestjs/common';
 import {HealthCheck, HealthCheckService, HttpHealthIndicator, PrismaHealthIndicator} from '@nestjs/terminus';
 import {SkipThrottle} from "@nestjs/throttler";
-import {PrismaService} from "../core/services/prisma.service";
+import {PrismaService} from "../../core/services/prisma.service";
 import {MailerHealthIndicator} from "@nestjs-modules/mailer";
 
 @SkipThrottle()

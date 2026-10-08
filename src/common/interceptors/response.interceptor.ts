@@ -17,6 +17,11 @@ export class ResponseInterceptor implements NestInterceptor {
                     };
                 }
 
+                // Handle cases where the result is already in the desired format
+                if ("success" in result && "message" in result && "data" in result) {
+                    return result
+                }
+
                 // For cases where the result is a single object with a "message" property
                 if (Object.keys(result).length === 1 && "message" in result) {
                     return {

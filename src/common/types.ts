@@ -10,3 +10,8 @@ export enum Mood {
 }
 
 export type SafeUser = Omit<User, 'password' | 'resetPasswordToken'>;
+
+export interface AuthenticatedUser {
+    userId: string;
+    email: string;
+}

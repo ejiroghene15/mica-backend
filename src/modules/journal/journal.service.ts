@@ -1,8 +1,8 @@
 import {Injectable, NotFoundException} from '@nestjs/common';
 import {CreateJournalDto} from './dto/create-journal.dto';
 import {UpdateJournalDto} from './dto/update-journal.dto';
-import {PrismaService} from "../core/services/prisma.service";
-import {PaginationDto} from "../common/utils/pagination.dto";
+import {PrismaService} from "../../core/services/prisma.service";
+import {PaginationDto} from "../../common/utils/pagination.dto";
 
 @Injectable()
 export class JournalService {
