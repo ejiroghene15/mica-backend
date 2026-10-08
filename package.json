@@ -53,7 +53,7 @@
     "ioredis": "^6.0.0",
     "keyv": "^5.6.0",
     "mailtrap": "^4.10.0",
-    "multer": "3.0.0-alpha.2",
+    "multer": "^2.2.0",
     "nodemailer": "10.0.9",
     "openai": "^7.30.0",
     "passport": "^0.7.0",
