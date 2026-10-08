@@ -12,8 +12,9 @@ import {env} from "prisma/config";
     imports: [
         BullModule.forRoot({
             connection: {
-                host: 'localhost',
-                port: 6379,
+                host: env('REDIS_HOST'),
+                port: parseInt(env('REDIS_PORT')),
+                url: env('REDIS_URL')
             },
         }),
 

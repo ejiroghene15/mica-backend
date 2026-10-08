@@ -38,8 +38,8 @@ export class CreateLayerDto {
 
 // zod schema for CreateLayerDto
 export const CreateCheckInsSchema = z.object({
-    category: z.enum(Object.values(Category)).optional(),
-    emotion: z.enum(Object.values(MoodKey)),
+    category: z.nativeEnum(Category).optional(),
+    emotion: z.nativeEnum(MoodKey),
     intensity: z.number().min(0, 'Intensity must be at least 0').max(100, 'Intensity must be at most 100'),
     note: z.string().max(500, 'Note must be at most 500 characters long').optional(),
 });

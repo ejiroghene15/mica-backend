@@ -47,29 +47,33 @@ enum Category {
   myself
 }
 
-
 // ------------------------------------------------------------------
 // Models
 // ------------------------------------------------------------------
 
 model User {
-  id                  String    @id @default(cuid())
-  name                String
-  email               String    @unique
-  password            String
-  refreshToken        String?
-  resetPasswordToken  String?
-  resetPasswordExpiry DateTime?
-  onboardingComplete  Boolean   @default(false) @map("onboarding_complete")
-  streakDays          Int       @default(0)
-  joinedAt            DateTime  @default(now())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  checkIns       CheckIn[]
-  journalEntries JournalEntry[]
-  conversations  Conversation[]
+  id                      String         @id @unique @default(cuid())
+  name                    String
+  email                   String         @unique
+  password                String
+  role                    String?        @default("user")
+  avatarUrl               String?
+  emailVerified           Boolean        @default(false) @map("email_verified")
+  emailVerificationToken  String?        @map("email_verification_token")
+  emailVerificationExpiry DateTime?      @map("email_verification_expiry") @db.Timestamp()
+  refreshToken            String?
+  resetPasswordToken      String?
+  resetPasswordExpiry     DateTime?
+  onboardingComplete      Boolean        @default(false) @map("onboarding_complete")
+  streakDays              Int            @default(0)
+  joinedAt                DateTime       @default(now())
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @default(now()) @updatedAt
+  checkIns                CheckIn[]
+  journalEntries          JournalEntry[]
+  conversations           Conversation[]
+  layers                  Layers[]
+  settings                Settings?
 
   @@map("users")
 }
@@ -89,22 +93,24 @@ model Mood {
   @@map("moods")
 }
 
-
-/* model CheckIn {
+model CheckIn {
   id        String   @id @default(cuid())
   userId    String
   mood      MoodKey
   /// 1–5 intensity
   intensity Int
-  category Category
+  category  Category
   note      String?
   tags      String[] @default([])
   createdAt DateTime @default(now())
-  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  layer MicaLayer?
+
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  layer    Layers? @relation(fields: [layersId], references: [id])
+  layersId String?
+
   @@index([userId, createdAt])
   @@map("check_ins")
-} */
+}
 
 /// A single accreted layer of "Your Mica". One per check-in (1:1).
 
@@ -113,20 +119,20 @@ model Layers {
   userId    String
   emotion   MoodKey
   intensity Int
-  category Category
+  category  Category
   note      String?
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
+  checkIns  CheckIn[]
 
   @@map("layers")
 }
 
-
-
 model JournalPrompt {
-  id   String @id @default(cuid())
-  text String
+  id      String         @id @default(cuid())
+  text    String
   entries JournalEntry[]
+
   @@map("journal_prompts")
 }
 
@@ -190,7 +196,40 @@ model ChatMessage {
   @@index([conversationId, createdAt])
   @@map("chat_messages")
 }
+
 enum LlmProvider {
   openai
   anthropic
+}
+
+model LlmConfig {
+  id           String      @id @default(cuid())
+  provider     LlmProvider
+  model        String
+  systemPrompt String
+  temperature  Float       @default(0.7)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("llm_configs")
+}
+
+model Settings {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // reminders
+  dailyCheckInReminder  Boolean @default(true)
+  journalPromptReminder Boolean @default(true)
+
+  // privacy
+  appLock      Boolean @default(false)
+  hidePreviews Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
 }

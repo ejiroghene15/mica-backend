@@ -1,7 +1,10 @@
 import {createParamDecorator, ExecutionContext} from '@nestjs/common';
-import {User} from "../../../generated/prisma/client";
 
-export type SafeUser = Omit<User, 'password'>;
+export interface AuthenticatedUser {
+    userId: string;
+    email: string;
+}
+
 
 interface RequestWithUser extends Request {
     user: AuthenticatedUser;

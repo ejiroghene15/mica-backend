@@ -11,20 +11,21 @@ import * as path from "node:path";
 @Global()
 @Module({
     imports: [
-        MailerModule.forRoot({
-            transport: {
-                host: env('MAIL_HOST'),
-                port: Number(env('MAIL_PORT')),
-                secure: true,
-                auth: {
-                    user: env('MAIL_USER'),
-                    pass: env('MAIL_PASSWORD'),
+        MailerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                transport: {
+                    host: config.get('MAIL_HOST'),
+                    port: config.get('MAIL_PORT'),
+                    auth: {
+                        user: config.get('MAIL_USER'),
+                        pass: config.get('MAIL_PASSWORD'),
+                    },
                 },
-            },
-
-            defaults: {
-                from: env('MAIL_FROM'),
-            },
+                defaults: {
+                    from: config.get('MAIL_FROM'),
+                },
 
                 template: {
                     dir: path.join(__dirname, 'templates').replace("src/", ""),
