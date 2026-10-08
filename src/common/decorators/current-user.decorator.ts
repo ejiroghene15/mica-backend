@@ -1,13 +1,17 @@
 import {createParamDecorator, ExecutionContext} from '@nestjs/common';
-import {SafeUser} from "../types";
+
+export interface AuthenticatedUser {
+    userId: string;
+    email: string;
+}
 
 
 interface RequestWithUser extends Request {
-    user: SafeUser;
+    user: AuthenticatedUser;
 }
 
-export const CurrentUser = createParamDecorator(
-    (data: keyof SafeUser | undefined, ctx: ExecutionContext) => {
+export const CurrentUser = createParamDecorator<keyof AuthenticatedUser | undefined>(
+    (data: keyof AuthenticatedUser | undefined, ctx: ExecutionContext) => {
         const request = ctx.switchToHttp().getRequest<RequestWithUser>();
         return data ? request.user[data] : request.user;
     },

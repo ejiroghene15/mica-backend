@@ -1,0 +1,49 @@
+version: '3.9'
+ 
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mica-app
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      - mailhog
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npx prisma db push && pnpm run start:dev"
+
+  db:
+    image: postgres:16-alpine
+    container_name: mica-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: mica-redis
+    ports:
+      - '6379:6379'
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: mica-mailhog
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+volumes:
+  postgres_data:

@@ -38,6 +38,15 @@ enum ChatRole {
   mica
 }
 
+enum Category {
+  work
+  relationships
+  health
+  money
+  rest
+  myself
+}
+
 // ------------------------------------------------------------------
 // Models
 // ------------------------------------------------------------------
@@ -63,6 +72,7 @@ model User {
   checkIns                CheckIn[]
   journalEntries          JournalEntry[]
   conversations           Conversation[]
+  layers                  Layers[]
   settings                Settings?
 
   @@map("users")
@@ -89,36 +99,38 @@ model CheckIn {
   mood      MoodKey
   /// 1–5 intensity
   intensity Int
+  category  Category
   note      String?
   tags      String[] @default([])
   createdAt DateTime @default(now())
 
-  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  layer MicaLayer?
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  layer    Layers? @relation(fields: [layersId], references: [id])
+  layersId String?
 
   @@index([userId, createdAt])
   @@map("check_ins")
 }
 
 /// A single accreted layer of "Your Mica". One per check-in (1:1).
-model MicaLayer {
-  id        String   @id @default(cuid())
-  checkInId String   @unique
-  mood      MoodKey
-  /// resolved hex for rendering
-  color     String
+
+model Layers {
+  id        String    @id @default(cuid())
+  userId    String
+  emotion   MoodKey
+  intensity Int
+  category  Category
   note      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  checkIns  CheckIn[]
 
-  checkIn CheckIn @relation(fields: [checkInId], references: [id], onDelete: Cascade)
-
-  @@map("mica_layers")
+  @@map("layers")
 }
 
 model JournalPrompt {
-  id   String @id @default(cuid())
-  text String
-
+  id      String         @id @default(cuid())
+  text    String
   entries JournalEntry[]
 
   @@map("journal_prompts")
@@ -183,6 +195,24 @@ model ChatMessage {
 
   @@index([conversationId, createdAt])
   @@map("chat_messages")
+}
+
+enum LlmProvider {
+  openai
+  anthropic
+}
+
+model LlmConfig {
+  id           String      @id @default(cuid())
+  provider     LlmProvider
+  model        String
+  systemPrompt String
+  temperature  Float       @default(0.7)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("llm_configs")
 }
 
 model Settings {

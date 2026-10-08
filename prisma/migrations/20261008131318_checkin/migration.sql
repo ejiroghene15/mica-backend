@@ -7,13 +7,23 @@ CREATE TYPE "ResourceKind" AS ENUM ('article', 'audio', 'video');
 -- CreateEnum
 CREATE TYPE "ChatRole" AS ENUM ('user', 'mica');
 
+-- CreateEnum
+CREATE TYPE "Category" AS ENUM ('work', 'relationships', 'health', 'money', 'rest', 'myself');
+
+-- CreateEnum
+CREATE TYPE "LlmProvider" AS ENUM ('openai', 'anthropic');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "role" TEXT DEFAULT 'user',
     "avatarUrl" TEXT,
+    "email_verified" BOOLEAN NOT NULL DEFAULT false,
+    "email_verification_token" TEXT,
+    "email_verification_expiry" TIMESTAMP,
     "refreshToken" TEXT,
     "resetPasswordToken" TEXT,
     "resetPasswordExpiry" TIMESTAMP(3),
@@ -42,23 +52,26 @@ CREATE TABLE "check_ins" (
     "userId" TEXT NOT NULL,
     "mood" "MoodKey" NOT NULL,
     "intensity" INTEGER NOT NULL,
+    "category" "Category" NOT NULL,
     "note" TEXT,
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "layersId" TEXT,
 
     CONSTRAINT "check_ins_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "mica_layers" (
+CREATE TABLE "layers" (
     "id" TEXT NOT NULL,
-    "checkInId" TEXT NOT NULL,
-    "mood" "MoodKey" NOT NULL,
-    "color" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "emotion" "MoodKey" NOT NULL,
+    "intensity" INTEGER NOT NULL,
+    "category" "Category" NOT NULL,
     "note" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "mica_layers_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "layers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -120,14 +133,42 @@ CREATE TABLE "chat_messages" (
     CONSTRAINT "chat_messages_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "llm_configs" (
+    "id" TEXT NOT NULL,
+    "provider" "LlmProvider" NOT NULL,
+    "model" TEXT NOT NULL,
+    "systemPrompt" TEXT NOT NULL,
+    "temperature" DOUBLE PRECISION NOT NULL DEFAULT 0.7,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "llm_configs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "settings" (
+    "id" SERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "dailyCheckInReminder" BOOLEAN NOT NULL DEFAULT true,
+    "journalPromptReminder" BOOLEAN NOT NULL DEFAULT true,
+    "appLock" BOOLEAN NOT NULL DEFAULT false,
+    "hidePreviews" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "settings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_id_key" ON "users"("id");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE INDEX "check_ins_userId_createdAt_idx" ON "check_ins"("userId", "createdAt");
-
--- CreateIndex
-CREATE UNIQUE INDEX "mica_layers_checkInId_key" ON "mica_layers"("checkInId");
 
 -- CreateIndex
 CREATE INDEX "journal_entries_userId_createdAt_idx" ON "journal_entries"("userId", "createdAt");
@@ -141,11 +182,17 @@ CREATE INDEX "conversations_userId_updatedAt_idx" ON "conversations"("userId", "
 -- CreateIndex
 CREATE INDEX "chat_messages_conversationId_createdAt_idx" ON "chat_messages"("conversationId", "createdAt");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "settings_userId_key" ON "settings"("userId");
+
 -- AddForeignKey
 ALTER TABLE "check_ins" ADD CONSTRAINT "check_ins_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mica_layers" ADD CONSTRAINT "mica_layers_checkInId_fkey" FOREIGN KEY ("checkInId") REFERENCES "check_ins"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "check_ins" ADD CONSTRAINT "check_ins_layersId_fkey" FOREIGN KEY ("layersId") REFERENCES "layers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "layers" ADD CONSTRAINT "layers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "journal_entries" ADD CONSTRAINT "journal_entries_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -158,3 +205,6 @@ ALTER TABLE "conversations" ADD CONSTRAINT "conversations_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "conversations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "settings" ADD CONSTRAINT "settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
