@@ -15,8 +15,7 @@ import { MicaChatModule } from './modules/mica-chat/mica-chat.module';
         ConfigModule.forRoot(),
         CoreModule,
         AuthModule,
-        MicaCheckinModule,
-        MicaChatModule
+        MicaCheckinModule
         
 
     ],

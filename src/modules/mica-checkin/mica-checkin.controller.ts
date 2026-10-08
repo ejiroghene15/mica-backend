@@ -10,7 +10,6 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @Controller('mica-checkin')
 export class MicaCheckinController {
     private readonly logger = new Logger(MicaCheckinController.name);
-
     constructor(
     private readonly micaCheckinService: MicaCheckinService,
   ) {}
