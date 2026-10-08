@@ -7,17 +7,13 @@ import {AuthModule} from './auth/auth.module';
 import {APP_GUARD} from "@nestjs/core";
 
 import {CoreModule} from './core/core.module';
-import { MicaCheckinModule } from './modules/mica-checkin/mica-checkin.module';
-import { MicaChatModule } from './modules/mica-chat/mica-chat.module';
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({isGlobal: true}),
         CoreModule,
         AuthModule,
-        MicaCheckinModule
-        
-
+        UsersModule
     ],
     controllers: [AppController],
     providers: [
@@ -25,7 +21,7 @@ import { MicaChatModule } from './modules/mica-chat/mica-chat.module';
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard
-        }
+        },
     ],
 })
 export class AppModule {

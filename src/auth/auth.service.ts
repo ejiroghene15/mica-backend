@@ -2,18 +2,19 @@ import {BadGatewayException, BadRequestException, ConflictException, Injectable}
 import {PrismaService} from "../core/services/prisma.service";
 import {SignupDto} from "./auth.dto";
 import {JwtService} from "@nestjs/jwt";
-import {HashPassword} from "../common/utils/password-hash";
+import {GenerateVerificationToken, HashToken} from "../common/utils/password-hash";
 import bcrypt from "bcrypt";
 import {jwtConstants} from "./constants";
-import * as crypto from "node:crypto";
 import {MailService} from "../mail/mail.service";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
-        public mailService: MailService
+        public mailService: MailService,
+        private readonly configService: ConfigService
     ) {
     }
 
@@ -25,11 +26,29 @@ export class AuthService {
         }
 
         try {
-            SignupDto.password = await HashPassword(SignupDto.password)
-            await this.prisma.user.create({data: SignupDto, select: {id: true, name: true, email: true}})
+            SignupDto.password = await HashToken(SignupDto.password)
+            const emailVerificationToken = GenerateVerificationToken()
+            const emailVerificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+            await this.prisma.user.create({
+                data: {
+                    name: SignupDto.name,
+                    email: SignupDto.email,
+                    password: SignupDto.password,
+                    emailVerificationToken: emailVerificationToken,
+                    emailVerificationExpiry: emailVerificationExpiry,
+                },
+                select: {id: true, name: true, email: true}
+            })
+
+            const verificationLink = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${emailVerificationToken}&email=${SignupDto.email}`;
 
             // Send welcome email after successful registration
-            await this.mailService.sendWelcomeEmail(SignupDto.email, SignupDto.name)
+            await this.mailService.sendWelcomeEmail({
+                name: SignupDto.name,
+                email: SignupDto.email,
+                verificationUrl: verificationLink
+            });
 
             return {message: "Registration successful. Please check your email to verify your account."}
         } catch (error) {
@@ -40,7 +59,7 @@ export class AuthService {
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.prisma.user.findFirst({
             where: {email},
-            select: {id: true, password: true, email: true}
+            select: {id: true, password: true, email: true, role: true}
         })
 
         if (!user) return null
@@ -49,40 +68,14 @@ export class AuthService {
         if (!isPasswordValid) {
             return null;
         }
-
         const {password: _, ...safeUser} = user;
         return safeUser;
     }
 
     async login(user: any) {
-        const tokens = await this.generateTokens(user.id, user.email);
+        const tokens = await this.generateTokens(user);
         await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
         return tokens;
-    }
-
-    private async generateTokens(userId: string, email: string) {
-        const payload = {sub: userId, email};
-
-        const [access_token, refresh_token] = await Promise.all([
-            this.jwtService.signAsync(payload, {
-                secret: jwtConstants.secret,
-                expiresIn: '15m',
-            }),
-            this.jwtService.signAsync(payload, {
-                secret: jwtConstants.refresh_secret, // different secret from access token
-                expiresIn: '7d',
-            }),
-        ]);
-
-        return {access_token, refresh_token};
-    }
-
-    private async updateRefreshTokenHash(userId: string, refreshToken: string) {
-        const hash = await bcrypt.hash(refreshToken, 10);
-        await this.prisma.user.update({
-            where: {id: userId},
-            data: {refreshToken: hash},
-        });
     }
 
     async refreshTokens(userId: string, refreshToken: string) {
@@ -112,7 +105,7 @@ export class AuthService {
         const user = await this.prisma.user.findUnique({where: {email}});
 
         const genericResponse = {
-            message: 'If an account with that email exists, a reset link has been sent.',
+            message: 'If an account with that email exists, a reset link will be sent.',
         };
 
         if (!user) {
@@ -120,9 +113,8 @@ export class AuthService {
         }
 
         // Generate a random raw token — sent to the user, never stored as-is
-        const buffer = crypto.randomBytes(32);
-        const rawToken = buffer.toString('hex');
-        const hashedToken = await bcrypt.hash(rawToken, 10);
+        const rawToken = GenerateVerificationToken();
+        const hashedToken = await HashToken(rawToken);
 
         await this.prisma.user.update({
             where: {id: user.id},
@@ -132,7 +124,7 @@ export class AuthService {
             },
         });
 
-        // const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}&email=${email}`;
+        // const resetLink = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${rawToken}&email=${email}`;
         // await this.mailService.sendPasswordResetEmail(email, resetLink); // your email provider
 
         return genericResponse;
@@ -155,7 +147,7 @@ export class AuthService {
             throw new BadRequestException('Invalid or expired reset token');
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const hashedPassword = await HashToken(newPassword);
 
         await this.prisma.user.update({
             where: {id: user.id},
@@ -168,5 +160,30 @@ export class AuthService {
         });
 
         return {message: 'Password reset successfully'};
+    }
+
+    private async generateTokens(user) {
+        const payload: any = {sub: user.id, email: user.email, role: user.role};
+
+        const [access_token, refresh_token] = await Promise.all([
+            this.jwtService.signAsync(payload, {
+                secret: jwtConstants.secret,
+                expiresIn: '1d',
+            }),
+            this.jwtService.signAsync(payload, {
+                secret: jwtConstants.refresh_secret, // different secret from access token
+                expiresIn: '7d',
+            }),
+        ]);
+
+        return {access_token, refresh_token};
+    }
+
+    private async updateRefreshTokenHash(userId: string, refreshToken: string) {
+        const hash = await bcrypt.hash(refreshToken, 10);
+        await this.prisma.user.update({
+            where: {id: userId},
+            data: {refreshToken: hash},
+        });
     }
 }

@@ -7,6 +7,7 @@ generator client {
   provider     = "prisma-client"
   output       = "../generated/prisma"
   moduleFormat = "cjs"
+  // importFileExtension = "ts"
 }
 
 datasource db {
@@ -66,10 +67,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  // checkIns       CheckIn[]
+  checkIns       CheckIn[]
   journalEntries JournalEntry[]
   conversations  Conversation[]
-  layers Layers[] 
 
   @@map("users")
 }
@@ -96,7 +96,7 @@ model Mood {
   mood      MoodKey
   /// 1–5 intensity
   intensity Int
-  category Category  
+  category Category
   note      String?
   tags      String[] @default([])
   createdAt DateTime @default(now())
@@ -107,10 +107,10 @@ model Mood {
 } */
 
 /// A single accreted layer of "Your Mica". One per check-in (1:1).
-  
+
 model Layers {
   id        String    @id @default(cuid())
-  userId    String    
+  userId    String
   emotion   MoodKey
   intensity Int
   category Category
@@ -119,7 +119,7 @@ model Layers {
   user      User      @relation(fields: [userId], references: [id])
 
   @@map("layers")
-} 
+}
 
 
 
@@ -193,17 +193,4 @@ model ChatMessage {
 enum LlmProvider {
   openai
   anthropic
-}
-
-model LlmConfig {
-  id           String      @id @default(cuid())
-  provider     LlmProvider
-  model        String
-  systemPrompt String
-  temperature  Float       @default(0.7)
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  @@map("llm_configs")
 }
