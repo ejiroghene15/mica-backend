@@ -6,6 +6,3 @@ allowBuilds:
   prisma: true
   protobufjs: true
   unrs-resolver: true
-
-  minimumReleaseAgeExclude:
-    - openai@7.30.1

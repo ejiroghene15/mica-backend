@@ -55,7 +55,7 @@
     "mailtrap": "^4.10.0",
     "multer": "^2.2.0",
     "nodemailer": "10.0.9",
-    "openai": "^7.30.0",
+    "openai": "^7.26.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -64,7 +64,8 @@
     "prisma": "^7.9.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "socket.io": "^4.8.4"
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

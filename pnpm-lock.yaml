@@ -114,8 +114,8 @@ importers:
         specifier: 10.0.9
         version: 10.0.9
       openai:
-        specifier: ^7.30.0
-        version: 7.30.1(undici@6.28.0)(ws@8.21.3)(zod@4.6.5)
+        specifier: ^7.26.0
+        version: 7.26.0(undici@6.28.0)(ws@8.21.3)(zod@4.6.5)
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -143,6 +143,9 @@ importers:
       socket.io:
         specifier: ^4.8.4
         version: 4.8.4
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -4083,8 +4086,8 @@ packages:
     resolution: {integrity: sha512-MVHddDVweXZF3awtlAS+6pgKLlm/JgxZ90+/NBurBoQctVOOB/zDdVjcyPzQ+0laDGbsWgrRkflI65sQeOgT9Q==}
     engines: {node: '>=8'}
 
-  openai@7.30.1:
-    resolution: {integrity: sha512-YgiPjBgXdItqTsgAR138bu9aHxBb3/L7qiiP8ucU8e9msRfF8cjRtp8y5qYW7E3Oe9O8UWejQZERf37dtdvoTg==}
+  openai@7.26.0:
+    resolution: {integrity: sha512-MjrHaTAmKPWbxtXWNcfOtURqpwJ/tnqMq2JgudRzx5OFHeMz0qrOaMH8JWotAL/08qd0OI/Hi1MEtgE9eyOAyw==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       '@aws-sdk/credential-provider-node': '>=3.972.0 <4'
@@ -10097,7 +10100,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@7.30.1(undici@6.28.0)(ws@8.21.3)(zod@4.6.5):
+  openai@7.26.0(undici@6.28.0)(ws@8.21.3)(zod@4.6.5):
     optionalDependencies:
       undici: 6.28.0
       ws: 8.21.3
@@ -11445,5 +11448,4 @@ snapshots:
       grammex: 3.1.13
       graphmatch: 1.1.1
 
-  zod@4.6.5:
-    optional: true
+  zod@4.6.5: {}
