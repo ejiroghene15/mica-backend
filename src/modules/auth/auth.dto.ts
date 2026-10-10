@@ -29,6 +29,7 @@ export class ForgotPasswordDto {
 }
 
 export class ResetPasswordDto {
+    @IsNotEmpty()
     @IsString()
     token: string;
 

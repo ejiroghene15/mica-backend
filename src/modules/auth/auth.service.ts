@@ -135,7 +135,7 @@ export class AuthService {
         const user = await this.prisma.user.findUnique({where: {email: dto.email}});
 
         if (!user || !user.resetPasswordToken || !user.resetPasswordExpiry) {
-            throw new BadRequestException('Invalid or expired reset token');
+            throw new BadRequestException('This token is invalid or has already been used');
         }
 
         if (user.resetPasswordExpiry < new Date()) {
@@ -143,8 +143,9 @@ export class AuthService {
         }
 
         const tokenMatches = await bcrypt.compare(dto.token, user.resetPasswordToken);
+
         if (!tokenMatches) {
-            throw new BadRequestException('Invalid or expired reset token');
+            throw new BadRequestException('Invalid token');
         }
 
         if (dto.newPassword !== dto.confirmPassword) {

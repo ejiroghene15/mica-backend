@@ -6,23 +6,15 @@ import {PrismaPg} from '@prisma/adapter-pg';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
     private readonly logger = new Logger(PrismaService.name);
+
     constructor() {
         const adapter = new PrismaPg({connectionString: env('DATABASE_URL')});
         new PrismaClient({adapter});
-        super({
-            adapter,
-            omit: {
-                user: {
-                    password: true,
-                    resetPasswordToken: true,
-                    role: true
-                }
-            }
-        });
+        super({adapter});
     }
 
     async onModuleInit() {
-    await this.$connect();
-    this.logger.log(1,'✅ Database connected successfully');
-  }
+        await this.$connect();
+        this.logger.log(1, '✅ Database connected successfully');
+    }
 }
