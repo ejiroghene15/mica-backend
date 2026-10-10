@@ -1,6 +1,6 @@
 import {BadGatewayException, BadRequestException, ConflictException, Injectable} from "@nestjs/common";
 import {PrismaService} from "../../core/services/prisma.service";
-import {SignupDto} from "./auth.dto";
+import {ResetPasswordDto, SignupDto} from "./auth.dto";
 import {JwtService} from "@nestjs/jwt";
 import {GenerateVerificationToken, HashToken} from "../../common/utils/password-hash";
 import bcrypt from "bcrypt";
@@ -124,15 +124,15 @@ export class AuthService {
             },
         });
 
-        // const resetLink = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${rawToken}&email=${email}`;
-        // await this.mailService.sendPasswordResetEmail(email, resetLink); // your email provider
+        const name = user.name;
+        const resetLink = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${rawToken}&email=${email}`;
+        await this.mailService.sendPasswordResetEmail(name, email, resetLink); // your email provider
 
         return genericResponse;
-
     }
 
-    async resetPassword(token: string, email: string, newPassword: string) {
-        const user = await this.prisma.user.findUnique({where: {email}});
+    async resetPassword(dto: ResetPasswordDto) {
+        const user = await this.prisma.user.findUnique({where: {email: dto.email}});
 
         if (!user || !user.resetPasswordToken || !user.resetPasswordExpiry) {
             throw new BadRequestException('Invalid or expired reset token');
@@ -142,12 +142,16 @@ export class AuthService {
             throw new BadRequestException('Reset token has expired');
         }
 
-        const tokenMatches = await bcrypt.compare(token, user.resetPasswordToken);
+        const tokenMatches = await bcrypt.compare(dto.token, user.resetPasswordToken);
         if (!tokenMatches) {
             throw new BadRequestException('Invalid or expired reset token');
         }
 
-        const hashedPassword = await HashToken(newPassword);
+        if (dto.newPassword !== dto.confirmPassword) {
+            throw new BadRequestException('Passwords do not match');
+        }
+
+        const hashedPassword = await HashToken(dto.newPassword);
 
         await this.prisma.user.update({
             where: {id: user.id},
@@ -155,14 +159,14 @@ export class AuthService {
                 password: hashedPassword,
                 resetPasswordToken: null,
                 resetPasswordExpiry: null,
-                refreshToken: null, // force logout on all devices — see note below
+                refreshToken: null,
             },
         });
 
         return {message: 'Password reset successfully'};
     }
 
-    private async generateTokens(user) {
+    private async generateTokens(user: { id: string, email: string, role: string }) {
         const payload: any = {sub: user.id, email: user.email, role: user.role};
 
         const [access_token, refresh_token] = await Promise.all([

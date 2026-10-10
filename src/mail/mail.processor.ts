@@ -16,6 +16,9 @@ export class EmailProcessor extends WorkerHost {
             case 'welcome-email':
                 await this.handleWelcomeEmail(job);
                 break;
+            case 'password-reset-email':
+                await this.handlePasswordResetEmail(job);
+                break;
             default:
                 this.logger.warn(`Unknown job type: ${job.name}`);
         }
@@ -33,6 +36,20 @@ export class EmailProcessor extends WorkerHost {
                 year: new Date().getFullYear(),
             },
         });
+    }
 
+    private async handlePasswordResetEmail(job: Job<{ name:string,email: string; resetLink: string }>) {
+        const {name, email, resetLink} = job.data;
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Password Reset Request',
+            template: 'password-reset',
+            context: {
+                name,
+                resetLink,
+                expiresIn: '15 minutes',
+                year: new Date().getFullYear(),
+            },
+        });
     }
 }
