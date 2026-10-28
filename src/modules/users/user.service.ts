@@ -94,15 +94,15 @@ export class UserService {
         return this.prisma.settings.upsert({
             where: {userId: user.userId},
             update: {
-                dailyCheckInReminder: dto.dailyCheckin,
-                journalPromptReminder: dto.journalPrompt,
-                appLock: dto.appLock,
-                hidePreviews: dto.hidePreviews
+                dailyCheckInReminder: dto.dailyCheckInReminder ?? undefined,
+                journalPromptReminder: dto.journalPromptReminder ?? undefined,
+                appLock: dto.appLock ?? undefined,
+                hidePreviews: dto.hidePreviews ?? undefined
             },
             create: {
                 userId: user.userId,
-                dailyCheckInReminder: dto.dailyCheckin,
-                journalPromptReminder: dto.journalPrompt,
+                dailyCheckInReminder: dto.dailyCheckInReminder,
+                journalPromptReminder: dto.journalPromptReminder,
                 appLock: dto.appLock,
                 hidePreviews: dto.hidePreviews,
             }

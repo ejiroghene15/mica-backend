@@ -62,7 +62,7 @@ export class UsersController {
 
     @Patch('me/settings')
     updateSettings(
-        @Body() dto: UserSettingsDto,
+        @Body() dto: Partial<UserSettingsDto>,
         @CurrentUser() user: AuthenticatedUser
     ) {
         return this.userService.updateSettings(user, dto);

@@ -21,10 +21,10 @@ export class UserResponseDto {
 
 export class UserSettingsDto {
     @IsBoolean()
-    dailyCheckin: boolean
+    dailyCheckInReminder: boolean
 
     @IsBoolean()
-    journalPrompt: boolean
+    journalPromptReminder: boolean
 
     @IsBoolean()
     appLock: boolean
