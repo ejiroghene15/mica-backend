@@ -23,7 +23,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ) {
             message = (exceptionResponse as any).message; // string or string[], from ValidationPipe or manual throws
         } else {
-            message = 'Internal server error';
+            return response.status(status).json({
+                statusCode: status,
+                ...exceptionResponse,
+            });
         }
 
         response.status(status).json({

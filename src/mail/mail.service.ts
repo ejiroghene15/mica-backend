@@ -9,11 +9,15 @@ export class MailService {
     ) {
     }
 
-    async sendWelcomeEmail({email, name, verificationUrl}: { email: string; name: string; verificationUrl: string }) {
+    async sendWelcomeEmail({email, name, verificationUrl}) {
         await this.mailQueue.add('welcome-email', {name, email, verificationUrl})
     }
 
     async sendPasswordResetEmail(name: string, email: string, resetLink: string) {
         await this.mailQueue.add('password-reset-email', {name, email, resetLink})
+    }
+
+    async resendVerificationMail({email, name, verificationUrl}){
+        await this.mailQueue.add('resend-verification-email', {name, email, verificationUrl})
     }
 }

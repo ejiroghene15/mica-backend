@@ -1,6 +1,12 @@
-import {BadGatewayException, BadRequestException, ConflictException, Injectable} from "@nestjs/common";
+import {
+    BadGatewayException,
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    NotFoundException
+} from "@nestjs/common";
 import {PrismaService} from "../../core/services/prisma.service";
-import {ResetPasswordDto, SignupDto} from "./auth.dto";
+import {ResetPasswordDto, SignupDto, VerifyAccountDto} from "./auth.dto";
 import {JwtService} from "@nestjs/jwt";
 import {GenerateVerificationToken, HashToken} from "../../common/utils/password-hash";
 import bcrypt from "bcrypt";
@@ -21,33 +27,34 @@ export class AuthService {
     async register(SignupDto: SignupDto): Promise<object> {
         const existing = await this.prisma.user.findUnique({where: {email: SignupDto.email}})
 
-        if (existing) {
-            throw new ConflictException("User with this email already exists")
-        }
+        if (existing) throw new ConflictException("An account with this email address already exists")
 
         try {
             SignupDto.password = await HashToken(SignupDto.password)
-            const emailVerificationToken = GenerateVerificationToken()
-            const emailVerificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+            // * Construct the payload for verification
+            const {
+                verification_token,
+                date_expires,
+                verification_link
+            } = this.accountVerificationParams(SignupDto.email)
 
             await this.prisma.user.create({
                 data: {
                     name: SignupDto.name,
                     email: SignupDto.email,
                     password: SignupDto.password,
-                    emailVerificationToken: emailVerificationToken,
-                    emailVerificationExpiry: emailVerificationExpiry,
+                    emailVerificationToken: verification_token,
+                    emailVerificationExpiry: date_expires,
                 },
                 select: {id: true, name: true, email: true}
             })
-
-            const verificationLink = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${emailVerificationToken}&email=${SignupDto.email}`;
 
             // Send welcome email after successful registration
             await this.mailService.sendWelcomeEmail({
                 name: SignupDto.name,
                 email: SignupDto.email,
-                verificationUrl: verificationLink
+                verificationUrl: verification_link
             });
 
             return {message: "Registration successful. Please check your email to verify your account."}
@@ -56,10 +63,49 @@ export class AuthService {
         }
     }
 
+    async resendVerification(email: string) {
+        const user = await this.prisma.user.findUnique({where: {email: email}})
+
+        if (!user) throw new NotFoundException("User not found")
+
+        if (user.emailVerified) return {message: "This email is already verified"}
+
+        // * Construct the payload for verification
+        const {
+            verification_token,
+            date_expires,
+            verification_link
+        } = this.accountVerificationParams(email, 15)
+
+        // * Update the verification token and date_expires
+        await this.prisma.user.update({
+            where: {email: email},
+            data: {emailVerificationToken: verification_token, emailVerificationExpiry: date_expires}
+        })
+
+        // Resend email verification
+        await this.mailService.resendVerificationMail({
+            name: user.name,
+            email: user.email,
+            verificationUrl: verification_link
+        });
+
+        return {message: "Verification email sent. Please check your inbox or spam folder"}
+    }
+
+    accountVerificationParams(email: string, time: number = 30) {
+        const verification_token = GenerateVerificationToken()
+        const date_expires = new Date(Date.now() + time * 60 * 1000) // Set to 30 minutes default
+
+        const verification_link = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${verification_token}&email=${encodeURI(email)}`;
+
+        return {verification_token, date_expires, verification_link}
+    }
+
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.prisma.user.findFirst({
             where: {email},
-            select: {id: true, password: true, email: true, role: true}
+            select: {id: true, password: true, email: true, role: true, emailVerified: true}
         })
 
         if (!user) return null
@@ -165,6 +211,37 @@ export class AuthService {
         });
 
         return {message: 'Password reset successfully'};
+    }
+
+    async verifyAccount(dto: VerifyAccountDto) {
+        const user = await this.prisma.user.findUnique({where: {email: dto.email, emailVerificationToken: dto.token}});
+
+        if (!user) {
+            throw new BadRequestException('Account not found');
+        }
+
+        if (user.emailVerified) {
+            return {message: 'Account already verified'};
+        }
+
+        if (!user.emailVerificationToken || !user.emailVerificationExpiry) {
+            throw new BadRequestException('This token is invalid or has already been used');
+        }
+
+        if (user.emailVerificationExpiry < new Date()) {
+            throw new BadRequestException('This link has expired');
+        }
+
+        await this.prisma.user.update({
+            where: {id: user.id},
+            data: {
+                emailVerified: true,
+                emailVerificationToken: null,
+                emailVerificationExpiry: null,
+            },
+        });
+
+        return {message: 'Email verified successfully'};
     }
 
     private async generateTokens(user: { id: string, email: string, role: string }) {

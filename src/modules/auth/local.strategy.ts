@@ -15,6 +15,11 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         if (!user) {
             throw new UnauthorizedException("Invalid email or password");
         }
+
+        if (!user.emailVerified) {
+            throw new UnauthorizedException("You need to verify your account before logging in");
+        }
+
         return user;
     }
 }

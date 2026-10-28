@@ -19,6 +19,9 @@ export class EmailProcessor extends WorkerHost {
             case 'password-reset-email':
                 await this.handlePasswordResetEmail(job);
                 break;
+            case 'resend-verification-email':
+                await this.handleResendVerificationEmail(job);
+                break;
             default:
                 this.logger.warn(`Unknown job type: ${job.name}`);
         }
@@ -38,7 +41,22 @@ export class EmailProcessor extends WorkerHost {
         });
     }
 
-    private async handlePasswordResetEmail(job: Job<{ name:string,email: string; resetLink: string }>) {
+    private async handleResendVerificationEmail(job: Job<{ name: string; email: string, verificationUrl: string }>) {
+        const {name, email, verificationUrl} = job.data;
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Verify Your MICA Account',
+            template: 'resend-verification',
+            context: {
+                name,
+                expiresIn: '15 minutes',
+                verificationUrl,
+                year: new Date().getFullYear(),
+            },
+        });
+    }
+
+    private async handlePasswordResetEmail(job: Job<{ name: string, email: string; resetLink: string }>) {
         const {name, email, resetLink} = job.data;
         await this.mailerService.sendMail({
             to: email,
