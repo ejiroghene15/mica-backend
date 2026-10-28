@@ -57,15 +57,19 @@ export class JournalService {
         return this.prisma.journalEntry.findUnique({where: {id, userId}, select: this.selectedFields})
     }
 
-    update(id: string, updateJournalDto: UpdateJournalDto, userId: string) {
-        return this.prisma.journalEntry.update({
-            where: {id},
-            data: {
-                body: updateJournalDto.body,
-                mood: updateJournalDto.mood,
-                userId: userId
-            }, select: this.selectedFields
-        })
+    async update(id: string, updateJournalDto: UpdateJournalDto, userId: string) {
+        try {
+            return await this.prisma.journalEntry.update({
+                where: {id},
+                data: {
+                    body: updateJournalDto.body,
+                    mood: updateJournalDto.mood,
+                    userId: userId
+                }, select: this.selectedFields
+            })
+        } catch (error) {
+            throw new NotFoundException("Journal entry not found")
+        }
     }
 
     async remove(id: string, userId: string) {

@@ -78,11 +78,15 @@ export class UserService {
         }
     }
 
-    settings(userId: string) {
-        return this.prisma.settings.findFirst({
-            where: {userId},
-            select: {dailyCheckInReminder: true, journalPromptReminder: true, appLock: true, hidePreviews: true}
-        });
+    async settings(userId: string) {
+        try {
+            return await this.prisma.settings.findFirst({
+                where: {userId},
+                select: {dailyCheckInReminder: true, journalPromptReminder: true, appLock: true, hidePreviews: true}
+            });
+        } catch (error) {
+            throw new BadGatewayException("An error occurred while fetching settings: " + error.message);
+        }
     }
 
     async updateSettings(user: AuthenticatedUser, dto: any) {

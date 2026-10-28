@@ -1,4 +1,4 @@
-import {IsEnum, IsNotEmpty, IsString, MinLength} from "class-validator";
+import {IsEnum, IsNotEmpty, IsOptional, IsString, MinLength} from "class-validator";
 import {Mood} from "../../../common/types";
 
 export class CreateJournalDto {
@@ -8,7 +8,8 @@ export class CreateJournalDto {
     body: string
 
     @IsEnum(Mood, {message: 'Mood must be one of: growth, joy, calm, tender, rest, heavy'})
-    mood: Mood
+    @IsOptional()
+    mood?: Mood
 }
 
 export class CreatePromptDto {
